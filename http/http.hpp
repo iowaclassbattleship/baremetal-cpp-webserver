@@ -12,6 +12,14 @@
 
 using function_pointer = std::string (*)();
 
+void get(std::map<std::string, function_pointer>& routes, std::string route, function_pointer func) {
+    routes["GET " + route] = func;
+}
+
+void post(std::map<std::string, function_pointer>& routes, std::string route, function_pointer func) {
+    routes["POST " + route] = func;
+}
+
 std::string handle_routes(const std::map<std::string, function_pointer>& routes, std::string requestBuffer) {
   for (const auto& [key, value] : routes) {
     if (requestBuffer.find(key) != std::string::npos) {
