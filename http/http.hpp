@@ -12,29 +12,25 @@
 #include "http_headers.hpp"
 
 using function_pointer = std::string (*)();
-using route_struct = struct {
+using route = struct {
   std::string route;
   function_pointer func;
 };
-using routes = std::vector<route_struct>;
+using routes = std::vector<route>;
 
 void get(routes& rs, std::string single_route, function_pointer func) {
-  route_struct r;
-  r.route = single_route;
-  r.func = func;
-
-  rs.push_back(r);
+  rs.push_back(route{ single_route, func });
 }
 
 std::string handle_routes(const routes& rs, std::string requestBuffer) {
-  for (const route_struct& r : rs) {
+  for (const route& r : rs) {
     if (requestBuffer.find(r.route) != std::string::npos) {
       function_pointer f = r.func;
       return (*f)();
     }
   }
 
-  return "";
+  return "404 ressource could not be found";
 }
 
 int accept_connection(const routes& rs, const int& sockfd) {
