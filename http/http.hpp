@@ -6,24 +6,30 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <vector>
 
 #include "filehandler.hpp"
 #include "http_headers.hpp"
 
 using function_pointer = std::string (*)();
+using route_struct = struct {
+  std::string route;
+  function_pointer func;
+};
+using routes = std::vector<route_struct>;
 
-void get(std::map<std::string, function_pointer>& routes, std::string route, function_pointer func) {
-    routes["GET " + route] = func;
+void get(routes& rs, std::string single_route, function_pointer func) {
+  route_struct r;
+  r.route = single_route;
+  r.func = func;
+
+  rs.push_back(r);
 }
 
-void post(std::map<std::string, function_pointer>& routes, std::string route, function_pointer func) {
-    routes["POST " + route] = func;
-}
-
-std::string handle_routes(const std::map<std::string, function_pointer>& routes, std::string requestBuffer) {
-  for (const auto& [key, value] : routes) {
-    if (requestBuffer.find(key) != std::string::npos) {
-      function_pointer f = value;
+std::string handle_routes(const routes& rs, std::string requestBuffer) {
+  for (const route_struct& r : rs) {
+    if (requestBuffer.find(r.route) != std::string::npos) {
+      function_pointer f = r.func;
       return (*f)();
     }
   }
@@ -31,7 +37,7 @@ std::string handle_routes(const std::map<std::string, function_pointer>& routes,
   return "";
 }
 
-int accept_connection(const std::map<std::string, function_pointer>& routes, const int& sockfd) {
+int accept_connection(const routes& rs, const int& sockfd) {
   sockaddr_in client_addr;
   socklen_t client_addr_size = sizeof(client_addr);
 
@@ -52,7 +58,7 @@ int accept_connection(const std::map<std::string, function_pointer>& routes, con
   buffer[bytes_received] = '\0';
   std::cout << "Request:\n" << buffer << "\n";
 
-  std::string content = handle_routes(routes, buffer);
+  std::string content = handle_routes(rs, buffer);
 
   std::string response = headers(content.size()) + content;
 
@@ -73,7 +79,7 @@ int accept_connection(const std::map<std::string, function_pointer>& routes, con
   return 0;
 }
 
-int setup_listening_socket(const std::map<std::string, function_pointer>& routes, const uint16_t& port) {
+int setup_listening_socket(const routes& rs, const uint16_t& port) {
   int sockfd = socket(AF_INET, SOCK_STREAM, 0);
   if (sockfd < 0) {
     std::cerr << "Error opening socket" << "\n";
@@ -96,7 +102,7 @@ int setup_listening_socket(const std::map<std::string, function_pointer>& routes
   }
 
   while (true) {
-    accept_connection(routes, sockfd);
+    accept_connection(rs, sockfd);
   }
 
   close(sockfd);

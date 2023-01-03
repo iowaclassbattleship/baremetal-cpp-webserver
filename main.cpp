@@ -5,7 +5,7 @@
 
 #include <iostream>
 #include <string>
-#include <map>
+#include <vector>
 
 #include "http/http.hpp"
 
@@ -22,11 +22,11 @@ std::string handle_post() {
 }
 
 int main() {
-  std::map<std::string, function_pointer> routes;
-  get(routes, "/", handle_index);
-  post(routes, "/", handle_post);
+  routes rs;
+  get(rs, "/test", handle_post);
+  get(rs, "/", handle_index);
 
-  setup_listening_socket(routes, 8080);
+  setup_listening_socket(rs, 8080);
 
   return 0;
 }
