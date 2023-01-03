@@ -3,26 +3,27 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <sstream>
-#include <fstream>
 #include <iostream>
 #include <string>
+#include <map>
 
+#include "filehandler.hpp"
 #include "http_headers.hpp"
 
-enum Methods { GET, POST };
+using function_pointer = std::string (*)();
 
-std::string get_file_as_string(std::string& filename) {
-    std::ifstream input_file(filename);
-    if (!input_file.is_open()) {
-        std::cerr << "Could not open the file - '" << filename << "'" << "\n";
-        exit(1);
+std::string handle_routes(const std::map<std::string, function_pointer>& routes, std::string requestBuffer) {
+  for (const auto& [key, value] : routes) {
+    if (requestBuffer.find(key) != std::string::npos) {
+      function_pointer f = value;
+      return (*f)();
     }
+  }
 
-    return std::string((std::istreambuf_iterator<char>(input_file)), std::istreambuf_iterator<char>()) + "\n\0";
+  return "";
 }
 
-int accept_connection(int sockfd) {
+int accept_connection(const std::map<std::string, function_pointer>& routes, const int& sockfd) {
   sockaddr_in client_addr;
   socklen_t client_addr_size = sizeof(client_addr);
 
@@ -43,8 +44,7 @@ int accept_connection(int sockfd) {
   buffer[bytes_received] = '\0';
   std::cout << "Request:\n" << buffer << "\n";
 
-  std::string filename = "index.html";
-  std::string content = get_file_as_string(filename);
+  std::string content = handle_routes(routes, buffer);
 
   std::string response = headers(content.size()) + content;
 
@@ -65,7 +65,7 @@ int accept_connection(int sockfd) {
   return 0;
 }
 
-int setup_listening_socket(uint16_t port) {
+int setup_listening_socket(const std::map<std::string, function_pointer>& routes, const uint16_t& port) {
   int sockfd = socket(AF_INET, SOCK_STREAM, 0);
   if (sockfd < 0) {
     std::cerr << "Error opening socket" << "\n";
@@ -88,7 +88,7 @@ int setup_listening_socket(uint16_t port) {
   }
 
   while (true) {
-    accept_connection(sockfd);
+    accept_connection(routes, sockfd);
   }
 
   close(sockfd);

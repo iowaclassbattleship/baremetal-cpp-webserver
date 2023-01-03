@@ -34,7 +34,7 @@ const std::string content_type() {
 }
 
 const std::string headers(unsigned int length) {
-    std::string h = "HTTP/2" + HTTP_200 + "\n";
+    std::string h = status(HTTP_200);
 
     std::map<std::string, std::string> headers{
         { "Server", server() },
