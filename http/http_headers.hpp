@@ -1,7 +1,9 @@
 #include <string>
 #include <map>
 
-const std::string HTTP_200 = "200 OK";
+std::map<unsigned int, std::string> status_codes{
+    { 200, "OK" }
+};
 
 const std::string status(const std::string& s);
 
@@ -33,8 +35,10 @@ const std::string content_type() {
     return "text/html; charset=iso-8859-1";
 }
 
-const std::string headers(unsigned int length) {
-    std::string h = status(HTTP_200);
+const std::string headers(unsigned int status_code, unsigned int length) {
+    std::string message = status_codes[status_code];
+    std::cout << message << "\n";
+    std::string h = status(std::to_string(status_code) + " " + message);
 
     std::map<std::string, std::string> headers{
         { "Server", server() },

@@ -8,7 +8,6 @@
 #include <map>
 #include <vector>
 
-#include "filehandler.hpp"
 #include "http_headers.hpp"
 
 using function_pointer = std::string (*)();
@@ -56,7 +55,7 @@ int accept_connection(const routes& rs, const int& sockfd) {
 
   std::string content = handle_routes(rs, buffer);
 
-  std::string response = headers(content.size()) + content;
+  std::string response = headers(200, content.size()) + content;
 
   if (send(client_sockfd, response.c_str(), response.size(), 0) == -1) {
     std::cerr << "Error sending data" << "\n";
