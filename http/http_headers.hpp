@@ -7,7 +7,7 @@ std::map<unsigned int, std::string> status_codes{
 
 const std::string status(const std::string& s);
 
-void headers_to_string(std::string& status, std::map<std::string, std::string>& headers) {
+void headers_to_string(std::string& status, const std::map<std::string, std::string>& headers) {
     for (const auto& [key, value] : headers) {
         status += key + ": " + value + "\n";
     }
@@ -37,7 +37,6 @@ const std::string content_type() {
 
 const std::string headers(unsigned int status_code, unsigned int length) {
     std::string message = status_codes[status_code];
-    std::cout << message << "\n";
     std::string h = status(std::to_string(status_code) + " " + message);
 
     std::map<std::string, std::string> headers{

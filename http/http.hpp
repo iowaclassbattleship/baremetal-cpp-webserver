@@ -32,7 +32,7 @@ std::string handle_routes(const routes& rs, std::string requestBuffer) {
   return "404 ressource could not be found";
 }
 
-int accept_connection(const routes& rs, const int& sockfd) {
+int accept_connection(const routes& routes, const int& sockfd) {
   sockaddr_in client_addr;
   socklen_t client_addr_size = sizeof(client_addr);
 
@@ -53,7 +53,7 @@ int accept_connection(const routes& rs, const int& sockfd) {
   buffer[bytes_received] = '\0';
   std::cout << "Request:\n" << buffer << "\n";
 
-  std::string content = handle_routes(rs, buffer);
+  std::string content = handle_routes(routes, buffer);
 
   std::string response = headers(200, content.size()) + content;
 
