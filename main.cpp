@@ -21,16 +21,20 @@ std::string get_file_as_string(std::string& filename) {
     return std::string((std::istreambuf_iterator<char>(input_file)), std::istreambuf_iterator<char>()) + "\n\0";
 }
 
-std::string handle_index() {
+void handle_index(const int& client_sockfd) {
   std::string filename = "static/index.html";
+  std::string res = get_file_as_string(filename);
 
-  return get_file_as_string(filename);
+  std::string response = headers(200, res.size(), "html") + res;
+  write(client_sockfd, response);
 }
 
-std::string handle_post() {
+void handle_post(const int& client_sockfd) {
   std::string filename = "static/styles.css";
+  std::string res = get_file_as_string(filename);
 
-  return get_file_as_string(filename);
+  std::string response = headers(200, res.size(), "css") + res;
+  write(client_sockfd, response);
 }
 
 int main() {

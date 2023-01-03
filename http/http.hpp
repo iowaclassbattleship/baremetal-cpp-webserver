@@ -22,15 +22,9 @@ int handle_routes(const int& client_sockfd, const routes_t& routes, const std::s
   for (const route_t& route : routes) {
     if (requestBuffer.find(route.route) != std::string::npos) {
       function_pointer f = route.func;
-      s += (*f)();
+      (*f)(client_sockfd);
       break;
     }
-  }
-
-  std::string response = headers(200, s.size(), "") + s;
-  if (write(client_sockfd, response) != 0) {
-    std::cerr << "Error writing data to socket" << "\n";
-    return 1;
   }
 
   return 0;
@@ -41,6 +35,7 @@ void parse_buffer(char* buffer, const int& client_sockfd, const int& BUFFER_SIZE
   if (bytes_received < 0) {
     std::cerr << "Error receiving data from client" << "\n";
     buffer[0] = '\0';
+    return;
   }
 
   buffer[bytes_received] = '\0';

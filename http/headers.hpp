@@ -8,6 +8,7 @@ std::map<unsigned int, std::string> status_codes{
 std::map<std::string, std::string> content_types{
     { "html", "text/html" },
     { "json", "application/json" },
+    { "css", "text/css" }
 };
 
 const std::string status(const std::string& s);

@@ -1,7 +1,7 @@
 #include <string>
 #include <vector>
 
-using function_pointer = std::string (*)();
+using function_pointer = void (*)(const int& client_sockfd);
 
 using route_t = struct {
   std::string route;
