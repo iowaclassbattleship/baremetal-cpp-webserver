@@ -36,6 +36,16 @@ int handle_routes(const int& client_sockfd, const routes_t& routes, const std::s
   return 0;
 }
 
+void parse_buffer(char* buffer, const int& client_sockfd, const int& BUFFER_SIZE) {
+  int bytes_received = recv(client_sockfd, buffer, BUFFER_SIZE - 1, 0);
+  if (bytes_received < 0) {
+    std::cerr << "Error receiving data from client" << "\n";
+    buffer[0] = '\0';
+  }
+
+  buffer[bytes_received] = '\0';
+}
+
 int accept_connection(const routes_t& routes, const int& sockfd) {
   sockaddr_in client_addr;
   socklen_t client_addr_size = sizeof(client_addr);
@@ -48,13 +58,8 @@ int accept_connection(const routes_t& routes, const int& sockfd) {
 
   const int BUFFER_SIZE = 1024;
   char buffer[BUFFER_SIZE];
-  int bytes_received = recv(client_sockfd, buffer, BUFFER_SIZE - 1, 0);
-  if (bytes_received < 0) {
-    std::cerr << "Error receiving data from client" << "\n";
-    return 1;
-  }
-
-  buffer[bytes_received] = '\0';
+  parse_buffer(buffer, client_sockfd, BUFFER_SIZE);
+  
   std::cout << "Request:\n" << buffer << "\n";
 
   handle_routes(client_sockfd, routes, buffer);
