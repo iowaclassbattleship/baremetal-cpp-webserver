@@ -8,50 +8,35 @@
 #include <map>
 #include <vector>
 
-#include "http_headers.hpp"
+#include "headers.hpp"
+#include "types.hpp"
+#include "response.hpp"
 
-using function_pointer = std::string (*)();
-using route = struct {
-  std::string route;
-  function_pointer func;
-};
-using routes = std::vector<route>;
-
-void get(routes& rs, std::string single_route, function_pointer func) {
-  rs.push_back(route{ single_route, func });
+void get(routes_t& routes, const std::string& single_route, const function_pointer& func) {
+  routes.push_back(route_t{ single_route, func });
 }
 
-int handle_routes(const int& client_sockfd, const routes& rs, std::string requestBuffer) {
+int handle_routes(const int& client_sockfd, const routes_t& routes, const std::string& requestBuffer) {
   std::string s = "";
 
-  for (const route& r : rs) {
-    if (requestBuffer.find(r.route) != std::string::npos) {
-      function_pointer f = r.func;
+  for (const route_t& route : routes) {
+    if (requestBuffer.find(route.route) != std::string::npos) {
+      function_pointer f = route.func;
       s += (*f)();
       break;
     }
   }
 
-  std::string response = headers(200, s.size()) + s;
-
-  if (send(client_sockfd, response.c_str(), response.size(), 0) == -1) {
-    std::cerr << "Error sending data" << "\n";
+  std::string response = headers(200, s.size(), "") + s;
+  if (write(client_sockfd, response) != 0) {
+    std::cerr << "Error writing data to socket" << "\n";
     return 1;
   }
-
-  if (close(client_sockfd) == -1) {
-    std::cerr << "Error closing socket" << "\n";
-    return 1;
-  }
-
-  std::cout << "Response:\n" << response;
-
-  close(client_sockfd);
 
   return 0;
 }
 
-int accept_connection(const routes& routes, const int& sockfd) {
+int accept_connection(const routes_t& routes, const int& sockfd) {
   sockaddr_in client_addr;
   socklen_t client_addr_size = sizeof(client_addr);
 
@@ -77,7 +62,7 @@ int accept_connection(const routes& routes, const int& sockfd) {
   return 0;
 }
 
-int setup_listening_socket(const routes& rs, const uint16_t& port) {
+int setup_listening_socket(const routes_t& routes, const uint16_t& port) {
   int sockfd = socket(AF_INET, SOCK_STREAM, 0);
   if (sockfd < 0) {
     std::cerr << "Error opening socket" << "\n";
@@ -100,7 +85,7 @@ int setup_listening_socket(const routes& rs, const uint16_t& port) {
   }
 
   while (true) {
-    accept_connection(rs, sockfd);
+    accept_connection(routes, sockfd);
   }
 
   close(sockfd);

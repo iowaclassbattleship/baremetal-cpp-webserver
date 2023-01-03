@@ -28,13 +28,13 @@ std::string handle_index() {
 }
 
 std::string handle_post() {
-  std::string filename = "static/test.html";
+  std::string filename = "static/styles.css";
 
   return get_file_as_string(filename);
 }
 
 int main() {
-  routes routes;
+  routes_t routes;
   get(routes, "/test", handle_post);
   get(routes, "/", handle_index);
 
